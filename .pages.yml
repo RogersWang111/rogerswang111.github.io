@@ -1,0 +1,147 @@
+media:
+  - name: images
+    label: 图片
+    input: public/media
+    output: media
+    rename: safe
+    categories: [image]
+
+content:
+  - name: site
+    label: 网站设置
+    type: file
+    path: content/site.json
+    format: json
+    fields:
+      - name: title
+        label: 主标题
+        type: string
+        required: true
+      - name: englishTitle
+        label: 英文副标题
+        type: string
+        required: true
+      - name: owner
+        label: 空间名称
+        type: string
+        required: true
+      - name: kicker
+        label: 首屏眉题
+        type: string
+      - name: tagline
+        label: 简介短句
+        type: text
+        required: true
+      - name: intro
+        label: 首屏说明
+        type: text
+      - name: footerNote
+        label: 页脚说明
+        type: string
+      - name: metaDescription
+        label: SEO 描述
+        type: text
+
+  - name: about
+    label: 个人介绍
+    type: file
+    path: content/about/about.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: lead
+        label: 引言
+        type: text
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          media: images
+          switcher: true
+
+  - name: projects
+    label: 项目
+    type: collection
+    path: content/projects
+    format: yaml-frontmatter
+    filename:
+      template: "{fields.slug}.md"
+      field: create
+    view:
+      primary: title
+      fields: [title, order, updated]
+      sort: [order, title]
+      default:
+        sort: order
+        order: asc
+    fields:
+      - name: slug
+        label: 网址标识
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+        description: 例如 study、collection。用于生成 study.html，创建后尽量不要再改。
+      - name: title
+        label: 中文标题
+        type: string
+        required: true
+      - name: english
+        label: 英文名称
+        type: string
+        required: true
+      - name: order
+        label: 排序
+        type: number
+        required: true
+      - name: description
+        label: 简介
+        type: text
+        required: true
+      - name: statusLine
+        label: 页面状态
+        type: string
+      - name: updated
+        label: 更新时间
+        type: string
+        description: 例如 2026.10
+      - name: draft
+        label: 草稿（不发布）
+        type: boolean
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          media: images
+          switcher: true
+
+  - name: statuses
+    label: 状态
+    type: collection
+    path: content/statuses
+    format: yaml-frontmatter
+    filename: "{year}-{month}-{day}-{hour}{minute}{second}.md"
+    view:
+      primary: date
+      fields: [date]
+      sort: [date]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: date
+        label: 日期
+        type: date
+        required: true
+      - name: draft
+        label: 草稿（不发布）
+        type: boolean
+      - name: body
+        label: 内容
+        type: rich-text
+        required: true
+        options:
+          media: images
+          switcher: true
