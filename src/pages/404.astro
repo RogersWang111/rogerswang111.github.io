@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import site from "../data/site";
+---
+
+<BaseLayout title={`页面走丢了 · ${site.title}`} isHome={false}>
+  <section class="not-found shell">
+    <p class="section-label">404 / Not found</p>
+    <h1>这里什么也没有。</h1>
+    <p>你走进了一片真正的无人之境。</p>
+    <a class="not-found-link" href="index.html">回到首页 <span aria-hidden="true">↗</span></a>
+  </section>
+</BaseLayout>

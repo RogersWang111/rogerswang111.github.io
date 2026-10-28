@@ -1,0 +1,35 @@
+---
+import site from "../data/site";
+
+interface Props {
+  isHome?: boolean;
+}
+
+const { isHome = false } = Astro.props;
+const sectionHref = (hash: string) => (isHome ? hash : `index.html${hash}`);
+---
+
+<header class="site-header">
+  <div class="shell nav-wrap">
+    <a class="brand" href={isHome ? "#main" : "index.html"} aria-label={`${site.title} · 返回首页`}>
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-copy">
+        <span class="brand-title">{site.title}</span>
+        <span class="brand-en">{site.englishTitle}</span>
+      </span>
+    </a>
+
+    <nav aria-label="主导航">
+      <ul class="nav-links">
+        <li><a class="nav-link" href={sectionHref("#about")}><span>01</span>关于</a></li>
+        <li><a class="nav-link" href={sectionHref("#projects")}><span>02</span>项目</a></li>
+        <li><a class="nav-link" href={sectionHref("#status")}><span>03</span>状态</a></li>
+      </ul>
+    </nav>
+
+    <a class="nav-cta" href={sectionHref("#comments")}>
+      <span class="dot" aria-hidden="true"></span>
+      留言
+    </a>
+  </div>
+</header>

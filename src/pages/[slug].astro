@@ -1,0 +1,117 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import site from "../data/site";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects", ({ data }) => !data.draft);
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { id: project.id },
+  }));
+}
+
+const { id } = Astro.props as { id: string };
+const project = await getEntry("projects", id);
+
+if (!project) {
+  throw new Error(`Project not found: ${id}`);
+}
+
+const allProjects = (await getCollection("projects", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title, "zh-CN"),
+);
+
+const currentIndex = allProjects.findIndex((item) => item.id === project.id);
+const previous = currentIndex > 0 ? allProjects[currentIndex - 1] : null;
+const next = currentIndex >= 0 && currentIndex < allProjects.length - 1
+  ? allProjects[currentIndex + 1]
+  : null;
+
+const { Content } = await render(project);
+const hasContent = Boolean(project.body?.trim());
+const order = String(project.data.order).padStart(2, "0");
+const pageTitle = `${project.data.title} · ${site.title}`;
+---
+
+<BaseLayout title={pageTitle} description={project.data.description} isHome={false}>
+  <div class="shell project-main">
+    <a class="back-link" href="index.html#projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      返回项目
+    </a>
+
+    <header class="project-hero">
+      <span class="project-ghost" aria-hidden="true">{order}</span>
+      <p class="section-label">Project 02.{order} / {project.data.english}</p>
+      <h1>{project.data.title}<span>。</span></h1>
+      <p class="project-lede">{project.data.description}</p>
+      <div class="project-meta">
+        <span>Status / {project.data.statusLine}</span>
+        {project.data.updated && <span>Updated / {project.data.updated}</span>}
+      </div>
+    </header>
+
+    <section class="project-content" aria-label={`${project.data.title}内容`}>
+      <div class="project-sheet">
+        <div class="sheet-bar sheet-bar--top">
+          <span>Content / 内容</span>
+          <span>Room {order}</span>
+        </div>
+        <div class:list={["sheet-body", hasContent && "sheet-body--article"]}>
+          {hasContent ? (
+            <div class="project-prose prose">
+              <Content />
+            </div>
+          ) : (
+            <>
+              <span class="sheet-symbol" aria-hidden="true">{project.data.title.slice(0, 1)}</span>
+              <h2>这一页还空着。</h2>
+              <p>等有了值得留下的内容，再慢慢补上。</p>
+            </>
+          )}
+        </div>
+        <div class="sheet-bar sheet-bar--bottom">
+          <span>{project.data.english} · Notes &amp; fragments</span>
+          <span>To be continued</span>
+        </div>
+      </div>
+
+      <nav class="project-pager" aria-label="项目页面切换">
+        {previous ? (
+          <a class="pager-link" href={`${previous.id}.html`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            上一间：{previous.data.title}
+          </a>
+        ) : (
+          <a class="pager-link" href="index.html#projects">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            返回项目
+          </a>
+        )}
+
+        {next ? (
+          <a class="pager-link pager-link--next" href={`${next.id}.html`}>
+            下一间：{next.data.title}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        ) : (
+          <a class="pager-link pager-link--next" href="index.html#projects">
+            回到项目
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        )}
+      </nav>
+    </section>
+  </div>
+</BaseLayout>

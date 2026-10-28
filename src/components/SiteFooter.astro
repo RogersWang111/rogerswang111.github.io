@@ -1,0 +1,39 @@
+---
+import site from "../data/site";
+
+interface Props {
+  isHome?: boolean;
+}
+
+const { isHome = false } = Astro.props;
+const sectionHref = (hash: string) => (isHome ? hash : `index.html${hash}`);
+const year = new Date().getFullYear();
+const footerQuote = site.tagline.replace(/\s*\n\s*/g, "");
+---
+
+<footer class="site-footer">
+  <div class="shell">
+    <div class="footer-top">
+      <div>
+        <p class="footer-title">{site.title}</p>
+        <p class="footer-note">{site.footerNote}</p>
+      </div>
+      <ul class="footer-links">
+        <li><a href={sectionHref("#about")}>关于</a></li>
+        <li><a href={sectionHref("#projects")}>项目</a></li>
+        <li><a href={sectionHref("#status")}>状态</a></li>
+        <li><a href={sectionHref("#comments")}>留言</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      <span>© {year} 汪荣杰</span>
+      <span class="footer-quote-inline">{footerQuote}</span>
+      <a class="top-link" href="#main">
+        回到顶部
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M12 19V5M6 11l6-6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>

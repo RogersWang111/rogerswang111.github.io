@@ -1,0 +1,213 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import site from "../data/site";
+
+const aboutEntry = await getEntry("about", "about");
+const aboutTitle = aboutEntry?.data.title ?? "关于";
+const aboutLead = aboutEntry?.data.lead ?? "一些还没有写完的自我介绍。";
+const aboutRendered = aboutEntry?.body?.trim() ? await render(aboutEntry) : null;
+const AboutContent = aboutRendered?.Content;
+
+const projects = (await getCollection("projects", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title, "zh-CN"),
+);
+
+const statuses = (await getCollection("statuses", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const statusItems = await Promise.all(
+  statuses.map(async (entry, index) => {
+    const { Content } = await render(entry);
+    return {
+      entry,
+      Content,
+      number: String(statuses.length - index).padStart(3, "0"),
+    };
+  }),
+);
+
+const statusCount = String(statuses.length).padStart(2, "0");
+const titleChars = Array.from(site.title);
+const taglineLines = site.tagline.split("\n");
+const introLines = site.intro.split("\n");
+const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g, ".");
+---
+
+<BaseLayout description={site.metaDescription} isHome={true}>
+  <!-- 封面 -->
+  <section class="cover" aria-labelledby="cover-title">
+    <div class="shell cover-inner">
+      <div class="cover-meta">
+        <span>私人册页 / Private pages</span>
+        <span>No. 01 · 2026</span>
+      </div>
+
+      <div class="cover-grid">
+        <div class="cover-copy">
+          <p class="cover-kicker">{site.kicker}</p>
+          <h1 class="cover-title" id="cover-title">
+            {titleChars.map((char, index) => (
+              <span class={index === 2 ? "blue" : ""}>{char}</span>
+            ))}
+          </h1>
+          <p class="cover-owner">{site.owner}</p>
+          <p class="cover-note">
+            {introLines.map((line, index) => (
+              <>{line}{index < introLines.length - 1 && <br />}</>
+            ))}
+          </p>
+        </div>
+
+        <div class="ink-panel">
+          <span class="ink-top">私人册页 / 二〇二六</span>
+          <p class="ink-quote">
+            {taglineLines.map((line, index) => (
+              <>{line}{index < taglineLines.length - 1 && <br />}</>
+            ))}
+          </p>
+          <span class="ink-foot"><span>Wang Rongjie</span><span>No. 01</span></span>
+        </div>
+      </div>
+
+      <div class="cover-foot">
+        <a class="scroll-cue" href="#about"><span class="cue-arrow" aria-hidden="true">↓</span>向下阅读</a>
+        <span>Somewhere in between</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 / 关于 -->
+  <section class="section" id="about" aria-labelledby="about-title">
+    <div class="shell">
+      <div class="section-head reveal">
+        <span class="section-no">01</span>
+        <div class="section-heading">
+          <p class="section-kicker">About / 关于</p>
+          <h2 id="about-title">{aboutTitle}</h2>
+        </div>
+        <p class="section-note">{aboutLead}</p>
+      </div>
+
+      {AboutContent ? (
+        <div class="intro-content reveal">
+          <div class="prose">
+            <AboutContent />
+          </div>
+        </div>
+      ) : (
+        <div class="intro-blank reveal">
+          <div class="blank-meta">
+            <span>Personal introduction</span>
+            <span class="blank-status">等待补充</span>
+          </div>
+          <div class="blank-center">
+            <span class="blank-plus" aria-hidden="true">＋</span>
+            <p>个人介绍将在这里展开。</p>
+          </div>
+          <div class="blank-foot">
+            <span>Wang Rongjie / 汪荣杰</span>
+            <span>Content pending</span>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- 02 / 项目 -->
+  <section class="section" id="projects" aria-labelledby="projects-title">
+    <div class="shell">
+      <div class="section-head reveal">
+        <span class="section-no">02</span>
+        <div class="section-heading">
+          <p class="section-kicker">Projects / 项目</p>
+          <h2 id="projects-title">四处走走</h2>
+        </div>
+        <p class="section-note">四个房间，四种方式，存放我感兴趣的东西。</p>
+      </div>
+
+      <div class="project-list">
+        {projects.map((project) => (
+          <a class="project-row reveal" href={`${project.id}.html`}>
+            <span class="project-no">{String(project.data.order).padStart(2, "0")}</span>
+            <span class="project-name">{project.data.title}</span>
+            <span class="project-en">{project.data.english}</span>
+            <span class="project-desc">{project.data.description}</span>
+            <span class="project-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+                <path d="M7 17 17 7M8 7h9v9" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 / 状态 -->
+  <section class="section" id="status" aria-labelledby="status-title">
+    <div class="shell">
+      <div class="section-head reveal">
+        <span class="section-no">03</span>
+        <div class="section-heading">
+          <p class="section-kicker">Status / 状态</p>
+          <h2 id="status-title">最近在做什么</h2>
+        </div>
+        <p class="section-note">一些近况、自言自语，和还没想清楚的事。</p>
+      </div>
+
+      <div class="status-layout">
+        <div class="status-intro reveal">
+          <p class="status-now">Now / <strong>{statusCount}</strong> 条公开状态</p>
+          <p class="status-quote">记录正在发生的事，<br />也记录那些还没有结论的念头。</p>
+        </div>
+
+        {statusItems.length > 0 ? (
+          <div class="status-feed">
+            {statusItems.map(({ entry, Content, number }, index) => (
+              <article class:list={["status-entry", "reveal", index === 0 && "is-latest"]}>
+                <div class="status-meta">
+                  <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatDate(entry.data.date)}</time>
+                  <span class="status-no">NO. {number}</span>
+                </div>
+                <div class="status-text">
+                  <Content />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div class="status-feed">
+            <p class="status-empty">还没有发布状态。</p>
+          </div>
+        )}
+      </div>
+
+      <!-- 留言 / GitHub 评论 -->
+      <div class="comments reveal" id="comments">
+        <div class="comments-head">
+          <div class="comments-heading">
+            <p class="section-label">Guestbook / 留言</p>
+            <h3>说点什么。</h3>
+          </div>
+          <p>使用 GitHub 账号登录后，就可以在这里留下评论。路过打个招呼，或者认真聊几句，都欢迎。</p>
+        </div>
+
+        <div class="comments-body">
+          <div class="comments-placeholder" id="comments-placeholder">
+            <span class="gh-mark" aria-hidden="true">GH</span>
+            <div class="comments-placeholder-copy">
+              <h4>GitHub 留言区</h4>
+              <p>留言区已准备好，等待站长为它接上 GitHub。连接完成后，访客使用 GitHub 账号登录即可评论。</p>
+            </div>
+          </div>
+          <div id="giscus-container"></div>
+          <noscript>
+            <p class="comment-loader">评论功能需要启用 JavaScript。</p>
+          </noscript>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
