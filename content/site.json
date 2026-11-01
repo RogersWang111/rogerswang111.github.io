@@ -5,6 +5,11 @@
   "kicker": "Essay · Notes · Archive",
   "tagline": "若你喜欢怪人，\n其实我很美。",
   "intro": "记录学习、收藏、足迹与随想。\n一个没有标准答案的地方。",
+  "projectsTitle": "四处走走",
+  "projectsLead": "四个房间，四种方式，存放我感兴趣的东西。",
+  "statusTitle": "最近在做什么",
+  "statusLead": "一些近况、自言自语，和还没想清楚的事。",
+  "statusQuote": "记录正在发生的事，\n也记录那些还没有结论的念头。",
   "footerNote": "汪荣杰的个人空间 · 2026",
   "metaDescription": "无人之境 —— 汪荣杰的个人空间。若你喜欢怪人，其实我很美。",
   "githubUrl": "https://github.com/RogersWang111",
@@ -12,3 +17,4 @@
   "wechatQr": "media/wechat-qr.jpg",
   "wechatLabel": "公众号主页"
 }
+
