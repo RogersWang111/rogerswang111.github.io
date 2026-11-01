@@ -1,4 +1,5 @@
-﻿---
-title: 关于
-lead: 一些还没有写完的自我介绍。
 ---
+title: about me
+---
+## hello
+
