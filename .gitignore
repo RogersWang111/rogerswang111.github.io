@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# Astro
+dist/
+.astro/
+
+# local files
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+
+# local design previews
+preview-*.png
