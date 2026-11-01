@@ -41,6 +41,24 @@ content:
       - name: intro
         label: 首屏说明
         type: text
+      - name: projectsTitle
+        label: 首页项目标题
+        type: string
+        required: true
+      - name: projectsLead
+        label: 首页项目引言
+        type: text
+      - name: statusTitle
+        label: 首页状态标题
+        type: string
+        required: true
+      - name: statusLead
+        label: 首页状态引言
+        type: text
+      - name: statusQuote
+        label: 状态左侧短句
+        type: text
+        description: 用换行分成两行显示。
       - name: footerNote
         label: 页脚说明
         type: string
