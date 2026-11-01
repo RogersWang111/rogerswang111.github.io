@@ -1,6 +1,7 @@
 ---
 import { getCollection, getEntry, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Elsewhere from "../components/Elsewhere.astro";
 import site from "../data/site";
 
 const aboutEntry = await getEntry("about", "about");
@@ -12,6 +13,37 @@ const AboutContent = aboutRendered?.Content;
 const projects = (await getCollection("projects", ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title, "zh-CN"),
 );
+
+const allEntries = (await getCollection("entries", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const places = (await getCollection("places", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g, ".");
+
+const projectGroups = projects.map((project) => {
+  const isFootprint = project.id === "footprint";
+  const source = isFootprint
+    ? places
+    : allEntries.filter((entry) => entry.data.category === project.id);
+
+  const items = source.slice(0, 3).map((item) => ({
+    id: item.id,
+    title: item.data.title,
+    date: formatDate(item.data.date),
+    url: `${item.id}.html`,
+  }));
+
+  return {
+    project,
+    items,
+    total: source.length,
+    href: `${project.id}.html`,
+  };
+});
 
 const statuses = (await getCollection("statuses", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
@@ -32,12 +64,12 @@ const statusCount = String(statuses.length).padStart(2, "0");
 const titleChars = Array.from(site.title);
 const taglineLines = site.tagline.split("\n");
 const introLines = site.intro.split("\n");
-const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g, ".");
 ---
 
 <BaseLayout description={site.metaDescription} isHome={true}>
   <!-- 封面 -->
   <section class="cover" aria-labelledby="cover-title">
+    <div class="cover-wash" aria-hidden="true"></div>
     <div class="shell cover-inner">
       <div class="cover-meta">
         <span>私人册页 / Private pages</span>
@@ -46,6 +78,7 @@ const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g,
 
       <div class="cover-grid">
         <div class="cover-copy">
+          <div class="cover-bloom" aria-hidden="true"></div>
           <p class="cover-kicker">{site.kicker}</p>
           <h1 class="cover-title" id="cover-title">
             {titleChars.map((char, index) => (
@@ -59,16 +92,15 @@ const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g,
             ))}
           </p>
         </div>
+      </div>
 
-        <div class="ink-panel">
-          <span class="ink-top">私人册页 / 二〇二六</span>
-          <p class="ink-quote">
-            {taglineLines.map((line, index) => (
-              <>{line}{index < taglineLines.length - 1 && <br />}</>
-            ))}
-          </p>
-          <span class="ink-foot"><span>Wang Rongjie</span><span>No. 01</span></span>
-        </div>
+      <div class="hero-strip">
+        <p class="strip-quote">
+          {taglineLines.map((line, index) => (
+            <>{line}{index < taglineLines.length - 1 && <br />}</>
+          ))}
+        </p>
+        <span class="strip-meta">Private edition<br />No. 01 / 2026</span>
       </div>
 
       <div class="cover-foot">
@@ -127,19 +159,40 @@ const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g,
         <p class="section-note">四个房间，四种方式，存放我感兴趣的东西。</p>
       </div>
 
-      <div class="project-list">
-        {projects.map((project) => (
-          <a class="project-row reveal" href={`${project.id}.html`}>
-            <span class="project-no">{String(project.data.order).padStart(2, "0")}</span>
-            <span class="project-name">{project.data.title}</span>
-            <span class="project-en">{project.data.english}</span>
-            <span class="project-desc">{project.data.description}</span>
-            <span class="project-arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-                <path d="M7 17 17 7M8 7h9v9" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
-          </a>
+      <div class="project-index">
+        {projectGroups.map(({ project, items, total, href }) => (
+          <section class="project-group reveal" aria-labelledby={`project-group-${project.id}`}>
+            <div class="project-group-head">
+              <span class="group-stamp" aria-hidden="true">{project.data.title.slice(0, 1)}</span>
+              <div class="project-group-title">
+                <p class="project-group-en">{project.data.english}</p>
+                <h3 id={`project-group-${project.id}`}>
+                  <a href={href}>{project.data.title}</a>
+                </h3>
+              </div>
+              <span class="project-count">{String(total).padStart(2, "0")}</span>
+            </div>
+
+            {items.length > 0 ? (
+              <ul class="project-entry-list">
+                {items.map((item) => (
+                  <li>
+                    <a href={item.url}>
+                      <time datetime={item.date.replace(/\./g, "-")}>{item.date}</time>
+                      <span>{item.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="project-empty">还没有公开内容。</p>
+            )}
+
+            <a class="project-group-link" href={href}>
+              {project.id === "footprint" ? "打开地图" : "查看全部"}
+              <span aria-hidden="true">↗</span>
+            </a>
+          </section>
         ))}
       </div>
     </div>
@@ -163,26 +216,36 @@ const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g,
           <p class="status-quote">记录正在发生的事，<br />也记录那些还没有结论的念头。</p>
         </div>
 
-        {statusItems.length > 0 ? (
-          <div class="status-feed">
-            {statusItems.map(({ entry, Content, number }, index) => (
-              <article class:list={["status-entry", "reveal", index === 0 && "is-latest"]}>
-                <div class="status-meta">
-                  <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatDate(entry.data.date)}</time>
-                  <span class="status-no">NO. {number}</span>
-                </div>
-                <div class="status-text">
-                  <Content />
-                </div>
-              </article>
-            ))}
+        <div class="status-content">
+          <div class="status-feed" data-status-feed>
+            {statusItems.length > 0 ? (
+              statusItems.map(({ entry, Content, number }, index) => (
+                <article class:list={["status-entry", "reveal", index === 0 && "is-latest"]}>
+                  <div class="status-meta">
+                    <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatDate(entry.data.date)}</time>
+                    <span class="status-no">NO. {number}</span>
+                  </div>
+                  <div class="status-text">
+                    <Content />
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p class="status-empty">还没有发布状态。</p>
+            )}
           </div>
-        ) : (
-          <div class="status-feed">
-            <p class="status-empty">还没有发布状态。</p>
-          </div>
-        )}
+
+          {statusItems.length > 0 && (
+            <div class="status-pager" data-status-pager hidden>
+              <button type="button" class="status-page-btn" data-status-prev aria-label="上一页状态">←</button>
+              <span class="status-page-count" data-status-page aria-live="polite">01 / 01</span>
+              <button type="button" class="status-page-btn" data-status-next aria-label="下一页状态">→</button>
+            </div>
+          )}
+        </div>
       </div>
+
+      <Elsewhere />
 
       <!-- 留言 / GitHub 评论 -->
       <div class="comments reveal" id="comments">

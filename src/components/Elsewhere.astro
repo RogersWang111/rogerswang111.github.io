@@ -1,0 +1,70 @@
+---
+import site from "../data/site";
+
+const wechatQr = (site.wechatQr || "").trim();
+const wechatUrl = (site.wechatUrl || "").trim();
+const hasQr = Boolean(wechatQr);
+const hasUrl = Boolean(wechatUrl);
+const wechatName = site.wechatLabel || "公众号";
+---
+
+<section class="elsewhere reveal" aria-labelledby="elsewhere-title">
+  <div class="elsewhere-heading">
+    <p class="section-label">Elsewhere / 别处</p>
+    <h3 id="elsewhere-title">在其他地方遇见我。</h3>
+  </div>
+
+  <div class="elsewhere-links">
+    <a class="elsewhere-card" href={site.githubUrl} target="_blank" rel="noreferrer">
+      <span class="elsewhere-mark" aria-hidden="true">GH</span>
+      <span class="elsewhere-copy">
+        <strong>GitHub</strong>
+        <small>代码、项目与旧文章</small>
+      </span>
+      <span class="elsewhere-arrow" aria-hidden="true">↗</span>
+    </a>
+
+    {hasQr ? (
+      <button class="elsewhere-card" type="button" data-wechat-open aria-haspopup="dialog">
+        <span class="elsewhere-mark" aria-hidden="true">WX</span>
+        <span class="elsewhere-copy">
+          <strong>{wechatName}</strong>
+          <small>扫码关注</small>
+        </span>
+        <span class="elsewhere-arrow" aria-hidden="true">＋</span>
+      </button>
+    ) : hasUrl ? (
+      <a class="elsewhere-card" href={wechatUrl} target="_blank" rel="noreferrer">
+        <span class="elsewhere-mark" aria-hidden="true">WX</span>
+        <span class="elsewhere-copy">
+          <strong>{wechatName}</strong>
+          <small>公众号文章</small>
+        </span>
+        <span class="elsewhere-arrow" aria-hidden="true">↗</span>
+      </a>
+    ) : (
+      <div class="elsewhere-card is-pending" aria-label="公众号入口尚未配置">
+        <span class="elsewhere-mark" aria-hidden="true">WX</span>
+        <span class="elsewhere-copy">
+          <strong>{wechatName}</strong>
+          <small>二维码待上传</small>
+        </span>
+        <span class="elsewhere-pending">待添加</span>
+      </div>
+    )}
+  </div>
+</section>
+
+{hasQr && (
+  <div class="qr-modal" id="wechat-qr-modal" data-wechat-modal hidden>
+    <div class="qr-dialog" role="dialog" aria-modal="true" aria-labelledby="wechat-qr-title">
+      <button class="qr-close" type="button" data-wechat-close aria-label="关闭公众号二维码">×</button>
+      <p class="section-label">WeChat / 公众号</p>
+      <h3 id="wechat-qr-title">{wechatName}</h3>
+      <div class="qr-image">
+        <img src={wechatQr} alt={`${wechatName}二维码`} loading="lazy" />
+      </div>
+      <p class="qr-hint">打开微信，扫一扫关注。</p>
+    </div>
+  </div>
+)}

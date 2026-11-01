@@ -1,0 +1,217 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import site from "../data/site";
+
+const project = await getEntry("projects", "footprint");
+if (!project) throw new Error("Missing project metadata: footprint");
+
+const places = (await getCollection("places", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g, ".");
+const mapPlaces = places.map((place) => ({
+  lat: place.data.lat,
+  lng: place.data.lng,
+  title: place.data.title,
+  location: place.data.location,
+  url: `${place.id}.html`,
+}));
+const order = String(project.data.order).padStart(2, "0");
+---
+
+<BaseLayout
+  title={`足迹 · ${site.title}`}
+  description={project.data.description}
+  isHome={false}
+>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" />
+  </Fragment>
+
+  <div class="shell category-page footprint-page">
+    <a class="back-link" href="index.html#projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      返回首页
+    </a>
+
+    <header class="category-hero">
+      <span class="category-stamp" aria-hidden="true">足</span>
+      <p class="section-label">Project 02.{order} / {project.data.english}</p>
+      <h1>足迹</h1>
+      <p class="category-desc">{project.data.description}</p>
+      <div class="category-meta">
+        <span>{places.length} 个地点</span>
+        <span>{project.data.statusLine}</span>
+        <a href="index.html#projects">所有项目</a>
+      </div>
+    </header>
+
+    <section class="footprint-map-section" aria-label="足迹地图">
+      <div class="map-wrap">
+        <div id="travel-map" class="travel-map" aria-label="我去过的地点地图"></div>
+        <div class="map-caption" aria-hidden="true">
+          <span>Map of places I have been</span>
+          <span>{places.length.toString().padStart(2, "0")} places</span>
+        </div>
+        <noscript>
+          <p class="map-fallback">地图需要启用 JavaScript；下面的地点列表仍然可以打开。</p>
+        </noscript>
+      </div>
+
+      <div class="map-footer">
+        <p class="map-hint">拖动地图浏览，点击蓝色标注进入地点页面。中国和世界视图共用同一批地点。</p>
+        <div class="map-pager" data-map-pager aria-label="地图翻页">
+          <button type="button" class="status-page-btn" data-map-prev aria-label="切换到中国地图">←</button>
+          <span class="map-page-label">
+            <strong data-map-view>中国</strong>
+            <span class="status-page-count" data-map-page>01 / 02</span>
+          </span>
+          <button type="button" class="status-page-btn" data-map-next aria-label="切换到世界地图">→</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="place-list-section" aria-labelledby="place-list-title">
+      <div class="list-heading">
+        <p class="section-label">Places / 地点</p>
+        <h2 id="place-list-title">去过的地方</h2>
+      </div>
+
+      {places.length > 0 ? (
+        <div class="place-list">
+          {places.map((place) => (
+            <a class="place-row reveal" href={`${place.id}.html`}>
+              <time datetime={place.data.date.toISOString().slice(0, 10)}>{formatDate(place.data.date)}</time>
+              <div class="place-row-copy">
+                <h3>{place.data.title}</h3>
+                <p>{place.data.location || place.data.summary}</p>
+              </div>
+              <span class="entry-row-arrow" aria-hidden="true">↗</span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="category-empty">
+          <span class="empty-mark" aria-hidden="true">＋</span>
+          <p>地图上还没有标注。之后去过的地方会慢慢出现。</p>
+        </div>
+      )}
+    </section>
+  </div>
+
+  <script is:inline src="assets/vendor/leaflet/leaflet.js"></script>
+  <script is:inline define:vars={{ mapPlaces }}>
+    (() => {
+      const target = document.getElementById("travel-map");
+      if (!target || !window.L) {
+        if (target) target.classList.add("is-unavailable");
+        return;
+      }
+
+      const map = L.map(target, {
+        scrollWheelZoom: false,
+        zoomControl: false,
+      });
+
+      L.control.zoom({ position: "topright" }).addTo(map);
+
+      map.createPane("worldOutline");
+      map.getPane("worldOutline").style.zIndex = "150";
+      map.getPane("worldOutline").style.pointerEvents = "none";
+
+      const outline = L.imageOverlay("assets/world-map.svg", [[-90, -180], [90, 180]], {
+        pane: "worldOutline",
+        opacity: 0.72,
+        interactive: false,
+      }).addTo(map);
+
+      const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Boundaries: Natural Earth',
+      }).addTo(map);
+
+      let outlineVisible = true;
+      tiles.on("tileload", () => {
+        if (outlineVisible) {
+          outline.setOpacity(0);
+          outlineVisible = false;
+        }
+      });
+
+      const isSmall = window.matchMedia("(max-width: 560px)").matches;
+      const views = [
+        {
+          label: "中国",
+          center: [35, 104],
+          zoom: isSmall ? 3 : 4,
+        },
+        {
+          label: "世界",
+          center: [0, 0],
+          zoom: isSmall ? 1 : 2,
+        },
+      ];
+
+      const pager = document.querySelector("[data-map-pager]");
+      const viewLabel = document.querySelector("[data-map-view]");
+      const pageLabel = document.querySelector("[data-map-page]");
+      const prev = document.querySelector("[data-map-prev]");
+      const next = document.querySelector("[data-map-next]");
+      let currentView = 0;
+
+      function applyView(index) {
+        currentView = index;
+        map.setView(views[index].center, views[index].zoom);
+        if (viewLabel) viewLabel.textContent = views[index].label;
+        if (pageLabel) {
+          pageLabel.textContent =
+            String(index + 1).padStart(2, "0") + " / " + String(views.length).padStart(2, "0");
+        }
+        if (prev) prev.disabled = index === 0;
+        if (next) next.disabled = index === views.length - 1;
+      }
+
+      if (pager && prev && next) {
+        prev.addEventListener("click", () => {
+          if (currentView > 0) applyView(currentView - 1);
+        });
+        next.addEventListener("click", () => {
+          if (currentView < views.length - 1) applyView(currentView + 1);
+        });
+      }
+
+      const icon = L.divIcon({
+        className: "map-marker",
+        html: "<span></span>",
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+      });
+
+      mapPlaces.forEach((place) => {
+        const marker = L.marker([place.lat, place.lng], {
+          icon,
+          title: place.title,
+          keyboard: true,
+        }).addTo(map);
+
+        marker.bindTooltip(place.title, {
+          direction: "top",
+          offset: [0, -10],
+          className: "map-tooltip",
+        });
+
+        marker.on("click", () => {
+          window.location.href = place.url;
+        });
+      });
+
+      applyView(0);
+
+      window.setTimeout(() => map.invalidateSize(), 180);
+    })();
+  </script>
+</BaseLayout>

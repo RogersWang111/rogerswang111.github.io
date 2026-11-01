@@ -1,0 +1,159 @@
+---
+import { getCollection, getEntry, render, type CollectionEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import site from "../data/site";
+
+export async function getStaticPaths() {
+  const [entries, places] = await Promise.all([
+    getCollection("entries", ({ data }) => !data.draft),
+    getCollection("places", ({ data }) => !data.draft),
+  ]);
+
+  return [
+    ...entries.map((entry) => ({
+      params: { entry: entry.id },
+      props: { kind: "entry" as const, id: entry.id },
+    })),
+    ...places.map((place) => ({
+      params: { entry: place.id },
+      props: { kind: "place" as const, id: place.id },
+    })),
+  ];
+}
+
+const { kind, id } = Astro.props as { kind: "entry" | "place"; id: string };
+const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g, ".");
+const fileLabel = (path: string) => decodeURIComponent(path.split("/").pop() || path);
+
+const categoryLabels = { study: "学习", collection: "收藏", thoughts: "随想" } as const;
+
+let entry: CollectionEntry<"entries"> | undefined;
+let place: CollectionEntry<"places"> | undefined;
+let categoryProject: CollectionEntry<"projects"> | undefined;
+let Content: any;
+let hasBody = false;
+
+if (kind === "entry") {
+  entry = await getEntry("entries", id);
+  if (!entry) throw new Error(`Entry not found: ${id}`);
+  categoryProject = await getEntry("projects", entry.data.category);
+  const rendered = await render(entry);
+  Content = rendered.Content;
+  hasBody = Boolean(entry.body?.trim());
+} else {
+  place = await getEntry("places", id);
+  if (!place) throw new Error(`Place not found: ${id}`);
+  const rendered = await render(place);
+  Content = rendered.Content;
+  hasBody = Boolean(place.body?.trim());
+}
+
+const categoryLabel = entry ? categoryLabels[entry.data.category] : "足迹";
+const projectOrder = categoryProject ? String(categoryProject.data.order).padStart(2, "0") : "03";
+const pageTitle = `${entry?.data.title ?? place?.data.title} · ${site.title}`;
+const pageDescription = entry?.data.summary ?? place?.data.summary ?? site.metaDescription;
+---
+
+<BaseLayout title={pageTitle} description={pageDescription} isHome={false}>
+  <article class:list={["shell entry-page", kind === "place" && "place-page"]}>
+    <a class="back-link" href={kind === "entry" ? `${entry?.data.category}.html` : "footprint.html"}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      {kind === "entry" ? `返回${categoryLabel}` : "返回足迹地图"}
+    </a>
+
+    {kind === "entry" && entry && (
+      <>
+        <header class="entry-hero">
+          <p class="section-label">Project 02.{projectOrder} / {categoryProject?.data.english}</p>
+          <h1>{entry.data.title}</h1>
+          <div class="entry-meta">
+            <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatDate(entry.data.date)}</time>
+            <span>{categoryLabel}</span>
+            {entry.data.resources.length > 0 && <span>{entry.data.resources.length} 个附件</span>}
+          </div>
+          {entry.data.summary && <p class="entry-summary">{entry.data.summary}</p>}
+        </header>
+
+        {entry.data.cover && (
+          <figure class="entry-cover">
+            <img src={entry.data.cover} alt={entry.data.title} loading="lazy" />
+          </figure>
+        )}
+
+        {hasBody ? (
+          <div class="entry-body prose">
+            <Content />
+          </div>
+        ) : (
+          <div class="entry-empty">
+            <p>这则内容还在整理中。</p>
+          </div>
+        )}
+
+        {entry.data.resources.length > 0 && (
+          <aside class="resource-panel" aria-labelledby="resource-title">
+            <p class="section-label">Files / 附件</p>
+            <h2 id="resource-title">可供下载的文件</h2>
+            <ul class="resource-list">
+              {entry.data.resources.map((resource) => (
+                <li>
+                  <a href={resource} download>
+                    <span class="resource-mark" aria-hidden="true">↓</span>
+                    <span>{fileLabel(resource)}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+      </>
+    )}
+
+    {kind === "place" && place && (
+      <>
+        <header class="place-hero">
+          <p class="section-label">Footprint / {place.data.location || "地点"}</p>
+          <h1>{place.data.title}</h1>
+          <div class="entry-meta">
+            <time datetime={place.data.date.toISOString().slice(0, 10)}>{formatDate(place.data.date)}</time>
+            {place.data.location && <span>{place.data.location}</span>}
+            <span>{place.data.lat.toFixed(3)}° / {place.data.lng.toFixed(3)}°</span>
+          </div>
+          {place.data.summary && <p class="entry-summary">{place.data.summary}</p>}
+        </header>
+
+        {place.data.cover && (
+          <figure class="place-cover">
+            <img src={place.data.cover} alt={place.data.title} loading="eager" />
+          </figure>
+        )}
+
+        {place.data.gallery.length > 0 && (
+          <div class="place-gallery" aria-label={`${place.data.title}的照片`}>
+            {place.data.gallery.map((image, index) => (
+              <figure>
+                <img src={image} alt={`${place.data.title} ${index + 1}`} loading="lazy" />
+              </figure>
+            ))}
+          </div>
+        )}
+
+        {hasBody ? (
+          <div class="entry-body place-body prose">
+            <Content />
+          </div>
+        ) : (
+          <div class="entry-empty">
+            <p>照片和感想还在路上。</p>
+          </div>
+        )}
+
+        <a class="back-to-map" href="footprint.html">
+          <span aria-hidden="true">←</span> 回到地图
+        </a>
+      </>
+    )}
+  </article>
+</BaseLayout>

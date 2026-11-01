@@ -1,0 +1,70 @@
+---
+import type { CollectionEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import site from "../data/site";
+
+interface Props {
+  category: "study" | "collection" | "thoughts";
+  project: CollectionEntry<"projects">;
+  entries: CollectionEntry<"entries">[];
+}
+
+const { category, project, entries } = Astro.props;
+const categoryLabel = { study: "学习", collection: "收藏", thoughts: "随想" }[category];
+const formatDate = (date: Date) => date.toISOString().slice(0, 10).replace(/-/g, ".");
+const order = String(project.data.order).padStart(2, "0");
+---
+
+<BaseLayout
+  title={`${categoryLabel} · ${site.title}`}
+  description={project.data.description}
+  isHome={false}
+>
+  <div class="shell category-page">
+    <a class="back-link" href="index.html#projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      返回首页
+    </a>
+
+    <header class="category-hero">
+      <span class="category-stamp" aria-hidden="true">{categoryLabel.slice(0, 1)}</span>
+      <p class="section-label">Project 02.{order} / {project.data.english}</p>
+      <h1>{categoryLabel}</h1>
+      <p class="category-desc">{project.data.description}</p>
+      <div class="category-meta">
+        <span>{entries.length} 则公开内容</span>
+        <span>{project.data.statusLine}</span>
+        <a href="index.html#projects">所有项目</a>
+      </div>
+    </header>
+
+    <section class="category-content" aria-label={`${categoryLabel}内容列表`}>
+      {entries.length > 0 ? (
+        <div class="entry-list">
+          {entries.map((entry) => (
+            <a class="entry-row reveal" href={`${entry.id}.html`}>
+              <time datetime={entry.data.date.toISOString().slice(0, 10)}>{formatDate(entry.data.date)}</time>
+              <div class="entry-row-copy">
+                <h2>{entry.data.title}</h2>
+                {entry.data.summary && <p>{entry.data.summary}</p>}
+              </div>
+              <div class="entry-row-side">
+                {entry.data.resources.length > 0 && (
+                  <span class="entry-file-count">{entry.data.resources.length} 个附件</span>
+                )}
+                <span class="entry-row-arrow" aria-hidden="true">↗</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="category-empty">
+          <span class="empty-mark" aria-hidden="true">＋</span>
+          <p>这一部分还没有公开内容，之后会慢慢补上。</p>
+        </div>
+      )}
+    </section>
+  </div>
+</BaseLayout>

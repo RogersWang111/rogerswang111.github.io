@@ -1,0 +1,14 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import CategoryPage from "../components/CategoryPage.astro";
+
+const category = "collection" as const;
+const project = await getEntry("projects", category);
+if (!project) throw new Error("Missing project metadata: collection");
+
+const entries = (await getCollection("entries", ({ data }) => data.category === category && !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<CategoryPage category={category} project={project} entries={entries} />

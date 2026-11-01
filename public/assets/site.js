@@ -64,6 +64,91 @@ window.SITE_CONFIG = {
     });
   }
 
+  function setupStatusPagination() {
+    var feed = document.querySelector("[data-status-feed]");
+    var pager = document.querySelector("[data-status-pager]");
+    if (!feed || !pager) return;
+
+    var entries = Array.prototype.slice.call(feed.querySelectorAll(".status-entry"));
+    var pageSize = 5;
+    var pageCount = Math.ceil(entries.length / pageSize);
+    var page = 0;
+    var prev = pager.querySelector("[data-status-prev]");
+    var next = pager.querySelector("[data-status-next]");
+    var label = pager.querySelector("[data-status-page]");
+
+    if (pageCount <= 1) {
+      pager.hidden = true;
+      entries.forEach(function (entry) {
+        entry.classList.add("is-visible");
+      });
+      return;
+    }
+
+    pager.hidden = false;
+
+    function render() {
+      entries.forEach(function (entry, index) {
+        var visible = Math.floor(index / pageSize) === page;
+        entry.hidden = !visible;
+        if (visible) entry.classList.add("is-visible");
+      });
+
+      label.textContent =
+        String(page + 1).padStart(2, "0") + " / " + String(pageCount).padStart(2, "0");
+      prev.disabled = page === 0;
+      next.disabled = page === pageCount - 1;
+    }
+
+    prev.addEventListener("click", function () {
+      if (page > 0) {
+        page -= 1;
+        render();
+      }
+    });
+
+    next.addEventListener("click", function () {
+      if (page < pageCount - 1) {
+        page += 1;
+        render();
+      }
+    });
+
+    render();
+  }
+
+  function setupWechatQr() {
+    var open = document.querySelector("[data-wechat-open]");
+    var modal = document.querySelector("[data-wechat-modal]");
+    if (!open || !modal) return;
+
+    var close = modal.querySelector("[data-wechat-close]");
+    var lastFocus = null;
+
+    function closeModal() {
+      if (modal.hidden) return;
+      modal.hidden = true;
+      document.body.classList.remove("modal-open");
+      if (lastFocus) lastFocus.focus();
+    }
+
+    function openModal() {
+      lastFocus = document.activeElement;
+      modal.hidden = false;
+      document.body.classList.add("modal-open");
+      if (close) close.focus();
+    }
+
+    open.addEventListener("click", openModal);
+    if (close) close.addEventListener("click", closeModal);
+    modal.addEventListener("click", function (event) {
+      if (event.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !modal.hidden) closeModal();
+    });
+  }
+
   function setupGiscus() {
     var mount = document.getElementById("giscus-container");
     if (!mount) return;
@@ -115,6 +200,8 @@ window.SITE_CONFIG = {
   }
 
   setupHeader();
+  setupStatusPagination();
+  setupWechatQr();
   setupGiscus();
   setupReveal();
 })();

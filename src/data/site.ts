@@ -9,6 +9,10 @@ export interface SiteSettings {
   intro: string;
   footerNote: string;
   metaDescription: string;
+  githubUrl: string;
+  wechatUrl: string;
+  wechatQr: string;
+  wechatLabel: string;
 }
 
 const site = siteData as SiteSettings;
