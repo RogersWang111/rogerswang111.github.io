@@ -7,6 +7,11 @@ export interface SiteSettings {
   kicker: string;
   tagline: string;
   intro: string;
+  projectsTitle: string;
+  projectsLead: string;
+  statusTitle: string;
+  statusLead: string;
+  statusQuote: string;
   footerNote: string;
   metaDescription: string;
   githubUrl: string;
