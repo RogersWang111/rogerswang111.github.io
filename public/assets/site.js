@@ -6,19 +6,19 @@
    ========================================================= */
 
 window.SITE_CONFIG = {
-  giscus: {
-    enabled: false,
-    repo: "",              // 例如 "yourname/your-repo"
-    repoId: "",            // 例如 "R_kgDO..."
-    category: "Comments",  // Discussions 分类名称
-    categoryId: "",        // 例如 "DIC_kwDO..."
-    mapping: "pathname",
-    strict: "0",
-    reactionsEnabled: "1",
-    inputPosition: "top",
-    theme: "light",
-    lang: "zh-CN"
-  }
+ giscus: {
+  enabled: true,
+  repo: "RogersWang111/rogerswang111.github.io",
+  repoId: "R_kgDOVZQ1lQ",       // 换成 giscus.app 给你的
+  category: "Comments",
+  categoryId: "DIC_kwDOVZQ1lc4DKIJF", // 换成 giscus.app 给你的
+  mapping: "pathname",
+  strict: "0",
+  reactionsEnabled: "1",
+  inputPosition: "top",
+  theme: "light",
+  lang: "zh-CN"
+}
 };
 
 (function () {
