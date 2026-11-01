@@ -5,6 +5,12 @@ media:
     output: media
     rename: safe
     categories: [image]
+  - name: files
+    label: 文件
+    input: public/media
+    output: media
+    rename: safe
+    categories: [document, compressed]
 
 content:
   - name: site
@@ -41,6 +47,23 @@ content:
       - name: metaDescription
         label: SEO 描述
         type: text
+      - name: githubUrl
+        label: GitHub 主页
+        type: string
+      - name: wechatQr
+        label: 公众号二维码
+        type: image
+        options:
+          media: images
+          categories: [image]
+        description: 上传公众号的二维码图片。点击「别处」里的公众号卡片会显示这张图，用微信扫码关注。
+      - name: wechatUrl
+        label: 公众号公开链接（可选）
+        type: string
+        description: 如果没有二维码，可以填一篇公开的公众号文章链接；微信公众号后台的登录地址不能填在这里。
+      - name: wechatLabel
+        label: 公众号名称
+        type: string
 
   - name: about
     label: 个人介绍
@@ -63,7 +86,7 @@ content:
           switcher: true
 
   - name: projects
-    label: 项目
+    label: 栏目设置
     type: collection
     path: content/projects
     format: yaml-frontmatter
@@ -110,8 +133,146 @@ content:
       - name: draft
         label: 草稿（不发布）
         type: boolean
+
+  - name: entries
+    label: 内容
+    type: collection
+    path: content/entries
+    format: yaml-frontmatter
+    filename:
+      template: "{fields.category}-{fields.urlSlug}.md"
+      field: create
+    view:
+      primary: title
+      fields: [title, category, date]
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: category
+        label: 所属栏目
+        type: select
+        required: true
+        options:
+          values:
+            - name: study
+              label: 学习
+            - name: collection
+              label: 收藏
+            - name: thoughts
+              label: 随想
+      - name: urlSlug
+        label: 网址标识
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+        description: 只用小写英文、数字和短横线，例如 reading-notes。
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: date
+        label: 日期
+        type: date
+        required: true
+      - name: summary
+        label: 摘要
+        type: text
+        description: 显示在列表中的一两句简介。
+      - name: cover
+        label: 封面图（可选）
+        type: image
+        options:
+          media: images
+          categories: [image]
+      - name: resources
+        label: 附件（可选）
+        type: file
+        options:
+          media: files
+          categories: [document, compressed]
+          multiple:
+            max: 8
+          unique: true
+          rename: true
+      - name: draft
+        label: 草稿（不发布）
+        type: boolean
       - name: body
         label: 正文
+        type: rich-text
+        options:
+          media: images
+          switcher: true
+
+  - name: places
+    label: 足迹地点
+    type: collection
+    path: content/places
+    format: yaml-frontmatter
+    filename:
+      template: "footprint-{fields.urlSlug}.md"
+      field: create
+    view:
+      primary: title
+      fields: [title, location, date]
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: 地点名称
+        type: string
+        required: true
+      - name: urlSlug
+        label: 网址标识
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+        description: 只用小写英文、数字和短横线，例如 hangzhou。
+      - name: location
+        label: 位置说明
+        type: string
+        description: 例如「浙江 · 杭州」。
+      - name: date
+        label: 到访日期
+        type: date
+        required: true
+      - name: lat
+        label: 纬度 Latitude
+        type: number
+        required: true
+        description: 例如上海约 31.23，杭州约 30.27。
+      - name: lng
+        label: 经度 Longitude
+        type: number
+        required: true
+        description: 例如上海约 121.47，杭州约 120.15。
+      - name: summary
+        label: 摘要
+        type: text
+      - name: cover
+        label: 封面图
+        type: image
+        options:
+          media: images
+          categories: [image]
+      - name: gallery
+        label: 图片集
+        type: image
+        options:
+          media: images
+          categories: [image]
+          multiple:
+            max: 12
+          unique: true
+      - name: draft
+        label: 草稿（不发布）
+        type: boolean
+      - name: body
+        label: 感想正文
         type: rich-text
         options:
           media: images
