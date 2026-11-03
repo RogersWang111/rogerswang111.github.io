@@ -1,10 +1,10 @@
-﻿---
+---
 slug: study
 title: 学习
 english: Learning
 order: 1
-description: 笔记、书摘，以及一些还没有答案的问题。
-statusLine: 持续整理中
+description: 等待一个不用焦虑考试的春夏秋冬
+statusLine: 假装努力中
 updated: "2026.10"
 draft: false
 ---
