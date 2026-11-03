@@ -1,6 +1,9 @@
 ---
-title: about me
-lead: hello
+title: 我
 ---
-## hello
+### 浙江大学  信息工程在读
+
+**infj  矫情的傻子**
+
+**旅行 音乐 发呆** 
 
