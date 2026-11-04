@@ -4,6 +4,8 @@ urlSlug: physics-experiments
 title: 大学物理实验
 date: 2026-10-30
 resources:
+  - media/分光计+棱镜.docx
+  - media/示波器+声速测定.docx
   - media/弗兰克赫兹实验.docx
   - media/万用表的设计.docx
 draft: false
