@@ -9,6 +9,7 @@ gallery:
   - media/202611041741111472.jpg
   - media/202611041741121482.jpg
   - media/202611041741141512.jpg
+  - media/202611041741501522.jpg
 draft: false
 ---
 海，风，朋友，自由。
