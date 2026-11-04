@@ -1,7 +1,7 @@
 ---
 title: 上海
 urlSlug: shanghai
-location: 上海
+location: 中国 · 上海
 date: 2025-07-03
 lat: 31.23
 lng: 121.47
