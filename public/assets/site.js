@@ -10,7 +10,7 @@ window.SITE_CONFIG = {
   enabled: true,
   repo: "RogersWang111/rogerswang111.github.io",
   repoId: "R_kgDOVZQ1lQ",       // 换成 giscus.app 给你的
-  category: "Comments",
+  category: "Announcements",
   categoryId: "DIC_kwDOVZQ1lc4DKIJF", // 换成 giscus.app 给你的
   mapping: "pathname",
   strict: "0",
